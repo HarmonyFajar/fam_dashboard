@@ -1,0 +1,115 @@
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Body */
+body {
+  font-family: 'Libre Caslon Display', serif;
+  background-color: #f8f9fa;
+}
+
+/* Container */
+.container {
+  width: 90%;
+  margin: 0 auto;
+}
+
+/* Header/Navbar */
+.header_section {
+  background-color: #393E46;
+  padding: 10px 0;
+}
+
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+}
+
+.logo img {
+  height: 50px;
+  margin-right: 10px;
+}
+
+.logo_text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.fam_title {
+  font-family: 'Lilita One', cursive;
+  font-size: 20px;
+  color: #fff;
+}
+
+.fam_subtitle {
+  font-family: 'Licorice', cursive;
+  font-size: 20px;
+  color: #fff;
+  margin-top: -5px;
+}
+
+.nav_menu a {
+  margin-left: 20px;
+  text-decoration: none;
+  font-family: 'Libre Caslon Display', serif;
+  color: #fff;
+  font-size: 18px;
+  transition: color 0.3s;
+}
+
+.nav_menu a:hover {
+  color: #00adb5;
+}
+
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  font-family: 'Libre Caslon Display', serif;
+}
+
+.profile img {
+  height: 30px;
+  width: 30px;
+}
+
+/* Hero Section */
+.hero_section {
+  background-color: #948979;
+  min-height: calc(100vh - 80px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero_content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 50px;
+  flex-wrap: wrap;
+}
+
+.img_side img {
+  width: 1200px; /* <<< ini udah dibesarin */
+  height: auto;
+}
+
+.text_side h2 {
+  font-family: 'Libre Caslon Display', serif;
+  font-size: 28px;
+  color: #fff;
+  text-align: center;
+}
+

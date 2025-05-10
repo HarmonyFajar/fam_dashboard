@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Upload Ambil Barang & GMV</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Licorice&family=Libre+Caslon+Display&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <script src="js/firebase-config.js" defer></script>
+  <script src="js/upload.js" defer></script>
+
+  <style>
+    body {
+      background-color: #f4f4f4;
+      font-family: 'Libre Caslon Display', serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 0 24px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 40px;
+      justify-content: center;
+    }
+
+    .card {
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      width: 400px;
+    }
+
+    .card h2 {
+      font-size: 22px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: #123458;
+    }
+
+    label {
+      font-weight: bold;
+      margin-top: 12px;
+      display: block;
+      color: #333;
+    }
+
+    input[type="file"],
+    input[type="date"],
+    select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      margin-bottom: 16px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    button {
+      background-color: #2b7de9;
+      color: white;
+      border: none;
+      padding: 12px 18px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    #resultResi, #resultGMV {
+      font-weight: bold;
+      margin-top: 12px;
+    }
+
+    .header_section {
+      background: #123458;
+      padding: 12px 0;
+    }
+
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+    }
+
+    .logo img {
+      width: 48px;
+      height: auto;
+      margin-right: 12px;
+    }
+
+    .logo_text {
+      color: #fff;
+    }
+
+    .fam_title {
+      font-family: 'Lilita One', cursive;
+      font-size: 18px;
+    }
+
+    .fam_subtitle {
+      font-family: 'Licorice', cursive;
+      font-size: 14px;
+    }
+
+    .nav_menu a {
+      margin-left: 20px;
+      color: #fff;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .profile {
+      display: flex;
+      align-items: center;
+      color: #fff;
+    }
+
+    .profile img {
+      width: 28px;
+      height: 28px;
+      margin-left: 8px;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ✅ HEADER NAVIGATION -->
+  <header class="header_section">
+    <nav class="navbar">
+      <div class="logo">
+        <img src="images/fajarlogonew.png" alt="FAM Logo" />
+        <div class="logo_text">
+          <div class="fam_title">FAJAR ANANDA MANDIRI</div>
+          <div class="fam_subtitle">System</div>
+        </div>
+      </div>
+      <div class="nav_menu">
+        <a href="index.html">Home</a>
+        <a href="upload_resi.html">Resi</a>
+        <a href="#">Stok</a>
+        <a href="#">Connect API</a>
+        <a href="#">Laporan</a>
+      </div>
+      <div class="profile">
+        <span>Anastasya</span>
+        <img src="images/profileicon.png" alt="Profile Icon" />
+      </div>
+    </nav>
+  </header>
+
+  <!-- ✅ FORM KONTEN -->
+  <div class="container">
+    <!-- ⬅️ Upload Ambil Barang -->
+    <div class="card">
+      <h2>Upload Ambil Barang</h2>
+      <form id="uploadFormResi">
+        <label>File</label>
+        <input type="file" id="excelFile" accept=".xlsx" required />
+
+        <label>Tanggal</label>
+        <input type="date" id="tanggal" required />
+
+        <label>Nama Toko</label>
+        <select id="toko" required>
+          <option value="Shopee">Shopee</option>
+          <option value="TikTok">TikTok</option>
+          <option value="Lainnya">Lainnya</option>
+        </select>
+
+        <label>Kloter</label>
+        <select id="kloter" required>
+          <option value="kloter1">Kloter 1</option>
+          <option value="kloter2">Kloter 2</option>
+          <option value="kloter3">Kloter 3</option>
+        </select>
+
+        <button type="submit">Upload</button>
+        <div id="resultResi"></div>
+      </form>
+    </div>
+
+    <!-- ➡️ Upload GMV -->
+    <div class="card">
+      <h2>Upload GMV</h2>
+      <form id="uploadFormGMV">
+        <label>File Modal SKU</label>
+        <input type="file" id="modalFile" accept=".xlsx" required />
+
+        <label>File Penjualan</label>
+        <input type="file" id="gmvFile" accept=".xlsx" required />
+
+        <label>Tanggal</label>
+        <input type="date" id="tanggalGMV" required />
+
+        <label>Platform</label>
+        <select id="platform" required>
+          <option value="Shopee">Shopee</option>
+          <option value="TikTok">TikTok</option>
+          <option value="Lainnya">Lainnya</option>
+        </select>
+
+        <button type="submit">Upload GMV</button>
+        <div id="resultGMV"></div>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
+
+
