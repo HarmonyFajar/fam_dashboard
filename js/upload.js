@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', function() {
   const databaseRef = firebase.database();
 
@@ -20,7 +19,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     const reader = new FileReader();
-
     reader.onload = function(e) {
       const data = new Uint8Array(e.target.result);
       const workbook = XLSX.read(data, { type: 'array' });
@@ -50,7 +48,6 @@ document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('resultResi').innerText = 'Upload Resi berhasil!';
       uploadFormResi.reset();
     };
-
     reader.readAsArrayBuffer(file);
   });
 
@@ -66,6 +63,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const gmvFile = document.getElementById('gmvFile').files[0];
     const tanggal = document.getElementById('tanggalGMV').value;
     const platform = document.getElementById('platform').value;
+    const iklanManual = parseFloat(document.getElementById('iklanManual').value || 0);
+    const topup = Math.round(iklanManual * 1.11);
+    document.getElementById('topupHasil').innerText = `Rp ${topup.toLocaleString()}`;
 
     if (!modalFile || !gmvFile || !tanggal || !platform) {
       alert('Lengkapi semua data GMV!');
@@ -114,13 +114,16 @@ document.addEventListener('DOMContentLoaded', function() {
         total_jual: totalJual,
         total_modal: totalModal,
         total_fee: totalFee,
-        profit_bersih: profit
+        profit_bersih: profit,
+        iklan_manual: iklanManual,
+        topup: topup
       };
 
       databaseRef.ref(`gmv/${tanggal}`).set(gmvSummary);
 
       document.getElementById('resultGMV').innerText = 'Upload GMV berhasil!';
       uploadFormGMV.reset();
+      document.getElementById('topupHasil').innerText = `Rp 0`;
     });
   });
 
