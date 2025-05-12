@@ -54,6 +54,7 @@
 
     input[type="file"],
     input[type="date"],
+    input[type="number"],
     select {
       width: 100%;
       padding: 10px;
@@ -213,18 +214,34 @@
         <label>Tanggal</label>
         <input type="date" id="tanggalGMV" required />
 
-        <label>Platform</label>
+        <label>Nama Toko</label>
         <select id="platform" required>
-          <option value="Shopee">Shopee</option>
-          <option value="TikTok">TikTok</option>
-          <option value="Lainnya">Lainnya</option>
+          <option value="LuluBaby">LuluBaby</option>
+          <option value="DinoBaby">DinoBaby</option>
+          <option value="FajarMart88">FajarMart88</option>
         </select>
+
+        <label>Nominal Iklan (Manual)</label>
+        <input type="number" id="iklanManual" placeholder="Masukkan nominal iklan" required />
+
+        <div style="margin-top: 10px; color: #333; font-weight: bold;">
+          Total Top-up (termasuk 11%): <span id="topupHasil">Rp 0</span>
+        </div>
 
         <button type="submit">Upload GMV</button>
         <div id="resultGMV"></div>
       </form>
     </div>
   </div>
+
+  <!-- Optional: Real-time update top-up saat input -->
+  <script>
+    document.getElementById('iklanManual').addEventListener('input', function () {
+      const val = parseFloat(this.value || 0);
+      const total = Math.round(val * 1.11);
+      document.getElementById('topupHasil').innerText = `Rp ${total.toLocaleString()}`;
+    });
+  </script>
 </body>
 </html>
 
