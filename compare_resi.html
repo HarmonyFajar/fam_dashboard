@@ -8,6 +8,12 @@
   <link rel="stylesheet" href="css/style.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
+    body {
+      background-color: #f4f4f4;
+      font-family: 'Libre Caslon Display', serif;
+      margin: 0;
+      padding: 0;
+    }
     .upload_box {
       max-width: 500px;
       margin: 60px auto;
@@ -44,12 +50,6 @@
     .upload_box .status {
       margin-top: 16px;
       color: #666;
-    }
-    body {
-      background-color: #f4f4f4;
-      font-family: 'Libre Caslon Display', serif;
-      margin: 0;
-      padding: 0;
     }
     .header_section {
       background: #123458;
@@ -177,16 +177,22 @@
             return;
           }
 
+          // ✅ Hitung jumlah resi unik
+          const totalResiUnik = new Set(hasil.map(r => r["No Resi "]?.trim())).size;
+
+          // Buat file dan download
           const ws = XLSX.utils.json_to_sheet(hasil);
           const wb = XLSX.utils.book_new();
           XLSX.utils.book_append_sheet(wb, ws, "Hasil");
           XLSX.writeFile(wb, namaFile);
 
-          document.getElementById("result").innerText = `✅ Ditemukan ${hasil.length} resi baru. File disimpan sebagai ${namaFile}`;
+          document.getElementById("result").innerText =
+            `✅ Ditemukan ${totalResiUnik} resi unik (${hasil.length} baris). File disimpan sebagai ${namaFile}`;
         });
       });
     }
   </script>
+
 </body>
 </html>
 
