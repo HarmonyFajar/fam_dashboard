@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Compare Resi | Fajar Ananda Mandiri</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Licorice&family=Libre+Caslon+Display&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    .upload_box {
+      max-width: 500px;
+      margin: 60px auto;
+      padding: 30px;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+      text-align: center;
+    }
+    .upload_box img {
+      width: 64px;
+      margin-bottom: 20px;
+    }
+    .upload_box input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    .upload_box button {
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .upload_box button:hover {
+      background-color: #1e40af;
+    }
+    .upload_box .status {
+      margin-top: 16px;
+      color: #666;
+    }
+    body {
+      background-color: #f4f4f4;
+      font-family: 'Libre Caslon Display', serif;
+      margin: 0;
+      padding: 0;
+    }
+    .header_section {
+      background: #123458;
+      padding: 12px 0;
+    }
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+    }
+    .logo img {
+      width: 48px;
+      margin-right: 12px;
+    }
+    .logo_text {
+      color: #fff;
+    }
+    .fam_title {
+      font-family: 'Lilita One', cursive;
+      font-size: 18px;
+    }
+    .fam_subtitle {
+      font-family: 'Licorice', cursive;
+      font-size: 14px;
+    }
+    .nav_menu a {
+      margin-left: 20px;
+      color: #fff;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .profile {
+      display: flex;
+      align-items: center;
+      color: #fff;
+    }
+    .profile img {
+      width: 28px;
+      height: 28px;
+      margin-left: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ✅ HEADER -->
+  <header class="header_section">
+    <nav class="navbar">
+      <div class="logo">
+        <img src="images/fajarlogonew.png" alt="FAM Logo" />
+        <div class="logo_text">
+          <div class="fam_title">FAJAR ANANDA MANDIRI</div>
+          <div class="fam_subtitle">System</div>
+        </div>
+      </div>
+      <div class="nav_menu">
+        <a href="index.html">Home</a>
+        <a href="upload_resi.html">Resi</a>
+        <a href="#">Stok</a>
+        <a href="#">Connect API</a>
+        <a href="#">Laporan</a>
+        <a href="compare_resi.html">Splitter</a>
+      </div>
+      <div class="profile">
+        <span>Anastasya</span>
+        <img src="images/profileicon.png" alt="Profile Icon" />
+      </div>
+    </nav>
+  </header>
+
+  <!-- ✅ Upload Box -->
+  <div class="upload_box">
+    <img src="images/ic_upload_folder.png" alt="Upload Folder Icon" />
+    <h2>Upload Resi Files (.xlsx)</h2>
+
+    <input type="file" id="file1" accept=".xlsx" placeholder="Upload Resi 1" />
+    <input type="file" id="file2" accept=".xlsx" placeholder="Upload Resi 2" />
+    <input type="text" id="namaFile" placeholder="Nama file output (tanpa .xlsx)" />
+
+    <button onclick="compareFiles()">Split & Download</button>
+
+    <div class="status" id="result">Ready to Split</div>
+  </div>
+
+  <!-- ✅ Script Compare -->
+  <script>
+    function readExcel(file, callback) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(sheet);
+        callback(json);
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function compareFiles() {
+      const file1 = document.getElementById('file1').files[0];
+      const file2 = document.getElementById('file2').files[0];
+      const namaInput = document.getElementById('namaFile').value.trim();
+      const namaFile = namaInput ? `${namaInput}.xlsx` : "hasil_resi_baru_kloter2.xlsx";
+
+      if (!file1 || !file2) {
+        alert('Upload kedua file terlebih dahulu');
+        return;
+      }
+
+      readExcel(file1, data1 => {
+        readExcel(file2, data2 => {
+          const formatRow = row => `${row["No Resi "]?.trim()}|${row.SKU?.trim()}|${row.Quantity}|${row.Ekspedisi?.trim()}`;
+          const set1 = new Set(data1.map(formatRow));
+          const hasil = data2.filter(row => !set1.has(formatRow(row)));
+
+          if (hasil.length === 0) {
+            document.getElementById("result").innerText = "✅ Tidak ada resi baru di Kloter 2.";
+            return;
+          }
+
+          const ws = XLSX.utils.json_to_sheet(hasil);
+          const wb = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(wb, ws, "Hasil");
+          XLSX.writeFile(wb, namaFile);
+
+          document.getElementById("result").innerText = `✅ Ditemukan ${hasil.length} resi baru. File disimpan sebagai ${namaFile}`;
+        });
+      });
+    }
+  </script>
+</body>
+</html>
+
