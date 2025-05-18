@@ -55,13 +55,21 @@
     input[type="file"],
     input[type="date"],
     input[type="number"],
-    select {
+    input[type="text"],
+    select,
+    textarea {
       width: 100%;
       padding: 10px;
       margin-top: 6px;
       margin-bottom: 16px;
       border: 1px solid #ccc;
       border-radius: 6px;
+      font-family: inherit;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
     }
 
     button {
@@ -75,7 +83,7 @@
       width: 100%;
     }
 
-    #resultResi, #resultGMV {
+    #resultResi, #resultGMV, #resultNotes {
       font-weight: bold;
       margin-top: 12px;
     }
@@ -154,7 +162,7 @@
       <div class="nav_menu">
         <a href="index.html">Home</a>
         <a href="upload_resi.html">Resi</a>
-        <a href="#">Stok</a>
+        <a href="load_products.html">Stok</a>
         <a href="#">Connect API</a>
         <a href="#">Laporan</a>
         <a href="compare_resi.html">Splitter</a>
@@ -233,14 +241,58 @@
         <div id="resultGMV"></div>
       </form>
     </div>
+
+    <!-- 📝 Upload Catatan Resi -->
+    <div class="card">
+      <h2>Upload Catatan Resi</h2>
+      <form id="uploadFormNotes">
+        <label>Nomor Resi</label>
+        <input type="text" id="resiNotes" placeholder="Contoh: JX1234567890" required />
+
+        <label>Catatan / Notes</label>
+        <textarea id="notesText" placeholder="Contoh: extra bubble, fragile, dll" required></textarea>
+
+        <button type="submit">Upload Notes</button>
+        <div id="resultNotes"></div>
+      </form>
+    </div>
   </div>
 
-  <!-- Optional: Real-time update top-up saat input -->
+  <!-- 🔁 Script -->
   <script>
+    // Realtime update iklan
     document.getElementById('iklanManual').addEventListener('input', function () {
       const val = parseFloat(this.value || 0);
       const total = Math.round(val * 1.11);
       document.getElementById('topupHasil').innerText = `Rp ${total.toLocaleString()}`;
+    });
+
+    // Upload Catatan Resi
+    document.getElementById('uploadFormNotes').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const resi = document.getElementById('resiNotes').value.trim();
+      const notes = document.getElementById('notesText').value.trim();
+      const result = document.getElementById('resultNotes');
+
+      if (!resi || !notes) {
+        result.innerText = "Resi dan catatan wajib diisi.";
+        result.style.color = "red";
+        return;
+      }
+
+      const db = firebase.database();
+      const ref = db.ref("resi_notes/" + resi);
+      ref.set({
+        notes: notes,
+        waktu_input: new Date().toISOString()
+      }).then(() => {
+        result.innerText = "Catatan berhasil diupload.";
+        result.style.color = "green";
+        document.getElementById('uploadFormNotes').reset();
+      }).catch(err => {
+        result.innerText = "Gagal upload: " + err;
+        result.style.color = "red";
+      });
     });
   </script>
 </body>
