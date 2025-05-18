@@ -115,7 +115,7 @@
       <div class="nav_menu">
         <a href="index.html">Home</a>
         <a href="upload_resi.html">Resi</a>
-        <a href="#">Stok</a>
+        <a href="load_products.html">Stok</a>
         <a href="#">Connect API</a>
         <a href="#">Laporan</a>
         <a href="compare_resi.html">Splitter</a>
@@ -132,8 +132,8 @@
     <img src="images/ic_upload_folder.png" alt="Upload Folder Icon" />
     <h2>Upload Resi Files (.xlsx)</h2>
 
-    <input type="file" id="file1" accept=".xlsx" placeholder="Upload Resi 1" />
-    <input type="file" id="file2" accept=".xlsx" placeholder="Upload Resi 2" />
+    <input type="file" id="file1" accept=".xlsx" placeholder="Upload Resi 1 (Pagi)" />
+    <input type="file" id="file2" accept=".xlsx" placeholder="Upload Resi 2 (Siang)" />
     <input type="text" id="namaFile" placeholder="Nama file output (tanpa .xlsx)" />
 
     <button onclick="compareFiles()">Split & Download</button>
@@ -156,10 +156,10 @@
     }
 
     function compareFiles() {
-      const file1 = document.getElementById('file1').files[0];
-      const file2 = document.getElementById('file2').files[0];
+      const file1 = document.getElementById('file1').files[0]; // referensi pagi
+      const file2 = document.getElementById('file2').files[0]; // data update siang
       const namaInput = document.getElementById('namaFile').value.trim();
-      const namaFile = namaInput ? `${namaInput}.xlsx` : "hasil_resi_baru_kloter2.xlsx";
+      const namaFile = namaInput ? `${namaInput}.xlsx` : "hasil_resi_baru.xlsx";
 
       if (!file1 || !file2) {
         alert('Upload kedua file terlebih dahulu');
@@ -168,26 +168,34 @@
 
       readExcel(file1, data1 => {
         readExcel(file2, data2 => {
-          const formatRow = row => `${row["No Resi "]?.trim()}|${row.SKU?.trim()}|${row.Quantity}|${row.Ekspedisi?.trim()}`;
-          const set1 = new Set(data1.map(formatRow));
-          const hasil = data2.filter(row => !set1.has(formatRow(row)));
+          // 📌 Patokan unik cukup pakai No Resi
+          const cleanResi = row => row["No Resi "]?.toString().trim();
+
+          // Buat Set dari File1
+          const resiSetFile1 = new Set(data1.map(cleanResi));
+
+          // Ambil hanya resi yang ada di File2 tapi tidak di File1
+          const hasil = data2.filter(row => {
+            const resi = cleanResi(row);
+            return resi && !resiSetFile1.has(resi);
+          });
 
           if (hasil.length === 0) {
-            document.getElementById("result").innerText = "✅ Tidak ada resi baru di Kloter 2.";
+            document.getElementById("result").innerText = "✅ Tidak ada resi baru.";
             return;
           }
 
-          // ✅ Hitung jumlah resi unik
-          const totalResiUnik = new Set(hasil.map(r => r["No Resi "]?.trim())).size;
+          // Hitung jumlah resi unik
+          const totalUnik = new Set(hasil.map(cleanResi)).size;
 
-          // Buat file dan download
+          // Download hasil sebagai Excel
           const ws = XLSX.utils.json_to_sheet(hasil);
           const wb = XLSX.utils.book_new();
           XLSX.utils.book_append_sheet(wb, ws, "Hasil");
           XLSX.writeFile(wb, namaFile);
 
           document.getElementById("result").innerText =
-            `✅ Ditemukan ${totalResiUnik} resi unik (${hasil.length} baris). File disimpan sebagai ${namaFile}`;
+            `✅ Ditemukan ${totalUnik} resi baru dari File 2. File disimpan sebagai ${namaFile}`;
         });
       });
     }
