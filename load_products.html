@@ -2,23 +2,175 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Stok Gudang</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Licorice&family=Libre+Caslon+Display&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="css/product-style.css" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Libre Caslon Display', serif;
+      background-color: #f4f4f4;
+      display: flex;
+    }
+    .sidebar {
+      width: 200px;
+      background-color: #123458;
+      color: white;
+      height: 100vh;
+      padding-top: 40px;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      left: 0;
+    }
+    .sidebar h2 {
+      text-align: center;
+      margin-bottom: 24px;
+      font-family: 'Lilita One', cursive;
+    }
+    .sidebar a {
+      padding: 12px 24px;
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .sidebar a:hover, .sidebar a.active {
+      background-color: #1d3557;
+    }
+    .main-wrapper {
+      width: 100%;
+      margin-left: 200px;
+    }
+    .header_section {
+      background: #123458;
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+    }
+    .logo img {
+      width: 48px;
+      margin-right: 12px;
+    }
+    .logo_text {
+      color: #fff;
+    }
+    .fam_title {
+      font-family: 'Lilita One', cursive;
+      font-size: 18px;
+    }
+    .fam_subtitle {
+      font-family: 'Licorice', cursive;
+      font-size: 14px;
+    }
+    .nav_menu a {
+      margin-left: 20px;
+      color: #fff;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .profile {
+      display: flex;
+      align-items: center;
+      color: #fff;
+    }
+    .profile img {
+      width: 28px;
+      height: 28px;
+      margin-left: 8px;
+    }
+    .main-content {
+      padding: 40px;
+    }
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .toolbar input[type="text"] {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      flex: 1;
+    }
+    .toolbar button {
+      background: white;
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .toolbar .add-btn {
+      background-color: #2563eb;
+      color: white;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .toolbar .add-btn img {
+      width: 16px;
+    }
+  </style>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <script src="js/firebase-config.js"></script>
 </head>
 <body>
-  <div class="container">
-    <h1>Stok Gudang</h1>
-    <div class="toolbar">
-      <input type="text" placeholder="Search..." />
-      <button><img src="images/icon-filter.png" alt="Filter" /></button>
-      <button><img src="images/icon-sort.png" alt="Sort" /></button>
-      <button class="add-btn"><img src="images/icon-plus.png" alt="Add" /> Add Product</button>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h2>Stock</h2>
+    <a href="load_products.html" class="active">Dashboard</a>
+    <a href="stok_add_product.html">Add Product</a>
+  </div>
+
+  <!-- Main Wrapper -->
+  <div class="main-wrapper">
+    <!-- Header -->
+    <header class="header_section">
+      <div class="logo">
+        <img src="images/fajarlogonew.png" alt="FAM Logo" />
+        <div class="logo_text">
+          <div class="fam_title">FAJAR ANANDA MANDIRI</div>
+          <div class="fam_subtitle">System</div>
+        </div>
+      </div>
+      <div class="nav_menu">
+        <a href="index.html">Home</a>
+        <a href="upload_resi.html">Resi</a>
+        <a href="stok_add_product.html">Stok</a>
+        <a href="#">Connect API</a>
+        <a href="#">Laporan</a>
+        <a href="compare_resi.html">Splitter</a>
+      </div>
+      <div class="profile">
+        <span>Anastasya</span>
+        <img src="images/profileicon.png" alt="Profile Icon" />
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <h1>Stok Gudang</h1>
+      <div class="toolbar">
+        <input type="text" placeholder="Search..." />
+        <button><img src="images/icon-filter.png" alt="Filter" /></button>
+        <button><img src="images/icon-sort.png" alt="Sort" /></button>
+        <button class="add-btn" onclick="window.location.href='stok_add_product.html'">
+          <img src="images/icon-plus.png" alt="Add" /> Add Product
+        </button>
+      </div>
+      <div class="product-list" id="product-list"></div>
     </div>
-    <div class="product-list" id="product-list"></div>
   </div>
 
   <script src="js/load-products.js" defer></script>
