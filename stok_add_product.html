@@ -2,15 +2,149 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Add Product - Stok Brader</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Add Product - Stock </title>
   <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Licorice&family=Libre+Caslon+Display&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
+  <style>
+    body {
+      background-color: #f4f4f4;
+      font-family: 'Libre Caslon Display', serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+    }
+    .sidebar {
+      width: 200px;
+      background-color: #123458;
+      color: white;
+      height: 100vh;
+      padding-top: 40px;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      left: 0;
+    }
+    .sidebar h2 {
+      text-align: center;
+      margin-bottom: 24px;
+      font-family: 'Lilita One', cursive;
+    }
+    .sidebar a {
+      padding: 12px 24px;
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .sidebar a:hover, .sidebar a.active {
+      background-color: #1d3557;
+    }
+    .main-wrapper {
+      width: 100%;
+      margin-left: 200px;
+    }
+    .header_section {
+      background: #123458;
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+    }
+    .logo img {
+      width: 48px;
+      margin-right: 12px;
+    }
+    .logo_text {
+      color: #fff;
+    }
+    .fam_title {
+      font-family: 'Lilita One', cursive;
+      font-size: 18px;
+    }
+    .fam_subtitle {
+      font-family: 'Licorice', cursive;
+      font-size: 14px;
+    }
+    .nav_menu a {
+      margin-left: 20px;
+      color: #fff;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .profile {
+      display: flex;
+      align-items: center;
+      color: #fff;
+    }
+    .profile img {
+      width: 28px;
+      height: 28px;
+      margin-left: 8px;
+    }
+    .main-content {
+      padding: 40px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+    .btn-save, .btn-reset {
+      background-color: #123458;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .btn-reset {
+      background-color: #888;
+    }
+    .image-upload-area {
+      border: 2px dashed #ccc;
+      padding: 30px;
+      text-align: center;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: border-color 0.3s ease;
+    }
+    .image-upload-area:hover {
+      border-color: #888;
+    }
+    .image-upload-area img.icon {
+      width: 40px;
+      opacity: 0.6;
+      margin-bottom: 10px;
+    }
+    .image-preview {
+      max-width: 100%;
+      max-height: 200px;
+      margin-top: 16px;
+      display: none;
+      border-radius: 8px;
+    }
+  </style>
 </head>
 <body>
-  <!-- ✅ HEADER -->
-  <header class="header_section">
-    <nav class="navbar">
+  <div class="sidebar">
+    <h2>Stok Brader</h2>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="stok_add_product.html" class="active">Add Product</a>
+  </div>
+
+  <div class="main-wrapper">
+    <header class="header_section">
       <div class="logo">
         <img src="images/fajarlogonew.png" alt="FAM Logo" />
         <div class="logo_text">
@@ -24,77 +158,85 @@
         <a href="stok_add_product.html">Stok</a>
         <a href="#">Connect API</a>
         <a href="#">Laporan</a>
+        <a href="compare_resi.html">Splitter</a>
       </div>
       <div class="profile">
         <span>Anastasya</span>
         <img src="images/profileicon.png" alt="Profile Icon" />
       </div>
-    </nav>
-  </header>
+    </header>
 
-  <!-- ✅ SIDEBAR -->
-  <aside>
-    <h2>Stok Brader</h2>
-    <nav>
-      <a href="dashboard.html">Dashboard</a>
-      <a href="products.html">Products</a>
-      <a href="stok_add_product.html">Add Product</a>
-      <a href="#">Categories</a>
-    </nav>
-  </aside>
+    <div class="main-content">
+      <h1>Add Product</h1>
+      <form id="productForm" style="background:#fff;padding:30px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.08)">
+        <div class="form-group" style="text-align:center;">
+          <label for="image" style="font-weight:bold; margin-bottom:8px;">Upload Product Photo</label>
+          <label for="image" class="image-upload-area">
+            <img src="images/ic_upload_foto.png" alt="Upload Icon" class="icon" />
+            <span style="color:#555;">Upload product photo</span>
+            <input type="file" id="image" accept="image/*" style="opacity:0; position:absolute; left:-9999px;" />
+          </label>
+          <img id="previewImage" class="image-preview" />
+        </div>
 
-  <!-- ✅ FORM -->
-  <div class="container" style="margin-left: 240px; margin-top: 100px; padding: 24px; max-width: 900px;">
-    <h1>Add Product</h1>
-    <form id="productForm" style="background:#fff;padding:30px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.08)">
-      <div class="form-group">
-        <label for="image">Upload Foto Produk</label>
-        <input type="file" id="image" accept="image/*" required />
-      </div>
-      <div class="form-group">
-        <label for="name">Product Name</label>
-        <input type="text" id="name" placeholder="Product Name" required>
-      </div>
-      <div class="form-group">
-        <label for="sku">SKU</label>
-        <input type="text" id="sku" placeholder="SKU" required>
-      </div>
-      <div class="form-group">
-        <label for="stock">Stock</label>
-        <input type="number" id="stock" placeholder="Stock" required>
-      </div>
-      <div class="form-group">
-        <label for="price">Price</label>
-        <input type="number" id="price" placeholder="Price" required>
-      </div>
-      <div class="form-group">
-        <label for="category">Category</label>
-        <select id="category" required>
-          <option value="">Select</option>
-          <option value="Sendok">Sendok</option>
-          <option value="Botol">Botol</option>
-          <option value="Mangkok">Mangkok</option>
-          <option value="Dot Bayi">Dot Bayi</option>
-          <option value="Mainan">Mainan</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="desc">Description</label>
-        <textarea id="desc" rows="3" placeholder="Description"></textarea>
-      </div>
-      <div style="display:flex;gap:10px;">
-        <button type="submit" class="btn-save">Save</button>
-        <button type="reset" class="btn-reset">Reset</button>
-      </div>
-    </form>
+        <div class="form-group">
+          <label for="name">Product Name</label>
+          <input type="text" id="name" placeholder="Product Name" required>
+        </div>
+        <div class="form-group">
+          <label for="sku">SKU</label>
+          <input type="text" id="sku" placeholder="SKU" required>
+        </div>
+        <div class="form-group">
+          <label for="stock">Stock</label>
+          <input type="number" id="stock" placeholder="Stock" required>
+        </div>
+        <div class="form-group">
+          <label for="price">Price</label>
+          <input type="number" id="price" placeholder="Price" required>
+        </div>
+        <div class="form-group">
+          <label for="category">Category</label>
+          <select id="category" required>
+            <option value="">Select</option>
+            <option value="Sendok">Sendok</option>
+            <option value="Botol">Botol</option>
+            <option value="Mangkok">Mangkok</option>
+            <option value="Dot Bayi">Dot Bayi</option>
+            <option value="Mainan">Mainan</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="desc">Description</label>
+          <textarea id="desc" rows="3" placeholder="Description"></textarea>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button type="submit" class="btn-save">Save</button>
+          <button type="reset" class="btn-reset">Reset</button>
+        </div>
+      </form>
+    </div>
   </div>
 
-  <!-- ✅ FIREBASE & SCRIPT -->
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <script src="js/firebase-config.js"></script>
   <script src="js/upload_produk.js" defer></script>
+  <script>
+    document.getElementById("image").addEventListener("change", function (e) {
+      const file = e.target.files[0];
+      const preview = document.getElementById("previewImage");
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          preview.src = e.target.result;
+          preview.style.display = "block";
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  </script>
 </body>
 </html>
 
