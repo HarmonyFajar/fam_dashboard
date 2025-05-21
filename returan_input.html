@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Input Returan</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Licorice&family=Libre+Caslon+Display&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <script src="js/firebase-config.js" defer></script>
+
+  <style>
+    body {
+      background-color: #f4f4f4;
+      font-family: 'Libre Caslon Display', serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .header_section {
+      background: #123458;
+      padding: 12px 0;
+    }
+
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+    }
+
+    .logo img {
+      width: 48px;
+      margin-right: 12px;
+    }
+
+    .logo_text {
+      color: #fff;
+    }
+
+    .fam_title {
+      font-family: 'Lilita One', cursive;
+      font-size: 18px;
+    }
+
+    .fam_subtitle {
+      font-family: 'Licorice', cursive;
+      font-size: 14px;
+    }
+
+    .nav_menu a {
+      margin-left: 20px;
+      color: #fff;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .profile {
+      display: flex;
+      align-items: center;
+      color: #fff;
+    }
+
+    .profile img {
+      width: 28px;
+      height: 28px;
+      margin-left: 8px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 24px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    h2 {
+      color: #123458;
+      margin-bottom: 20px;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin: 12px 0 6px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    #skuList {
+      max-height: 400px;
+      overflow-y: auto;
+      margin-top: 20px;
+      border: 1px solid #ddd;
+      padding: 12px;
+      border-radius: 6px;
+    }
+
+    .sku-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .sku-item input[type="number"] {
+      width: 60px;
+      margin-left: 10px;
+    }
+
+    button {
+      background-color: #2b7de9;
+      color: white;
+      border: none;
+      padding: 12px 18px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    button:hover {
+      background-color: #1a5cc8;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ✅ HEADER NAVIGATION -->
+  <header class="header_section">
+    <nav class="navbar">
+      <div class="logo">
+        <img src="images/fajarlogonew.png" alt="FAM Logo" />
+        <div class="logo_text">
+          <div class="fam_title">FAJAR ANANDA MANDIRI</div>
+          <div class="fam_subtitle">System</div>
+        </div>
+      </div>
+      <div class="nav_menu">
+        <a href="index.html">Home</a>
+        <a href="upload_resi.html">Resi</a>
+        <a href="load_products.html">Stok</a>
+        <a href="#">Connect API</a>
+        <a href="#">Laporan</a>
+        <a href="compare_resi.html">Splitter</a>
+        <a href="returan_input.html">Returan</a>
+      </div>
+      <div class="profile">
+        <span>Anastasya</span>
+        <img src="images/profileicon.png" alt="Profile Icon" />
+      </div>
+    </nav>
+  </header>
+
+  <!-- ✅ FORM RETUR -->
+  <div class="container">
+    <h2>Input Returan</h2>
+    <label for="resi">Scan / Input Resi:</label>
+    <input type="text" id="resi" autofocus />
+
+    <div id="skuList"></div>
+
+    <button onclick="simpanData()">Simpan</button>
+  </div>
+
+  <script>
+    const skuList = [
+      "BDS-V2-P", "BDS-V2-K", "BDS-V2-H", "BDS-V2-B", "BSB-150ML", "BSB-180ML", "BSB-250ML",
+      "DOT-KP-HU", "DOT-KP-PA", "DOT-KP-KA", "DOT-B-MDM", "DOT-B-LRG", "DOT-P-MDM", "DOT-P-LRG",
+      "MSB-H", "MSB-B", "MSB-M", "MSB-K", "SDK-BM", "SDK-HM", "SDK-OM", "SDK-PM", "BTP-OM", "BTP-PM",
+      "TSP-K", "TSP-B", "TSP-M", "TSP-H", "BOX-AT", "BOX-PINK", "BOX-KOTAK", "DOT-K", "DOT-B", "DOT-P"
+    ];
+
+    const skuListDiv = document.getElementById("skuList");
+
+    skuList.forEach(sku => {
+      const div = document.createElement("div");
+      div.className = "sku-item";
+      div.innerHTML = `
+        <input type="checkbox" id="cb-${sku}" value="${sku}"> <label for="cb-${sku}">${sku}</label>
+        <input type="number" id="qty-${sku}" placeholder="Qty" min="1">
+      `;
+      skuListDiv.appendChild(div);
+    });
+
+    function simpanData() {
+      const resi = document.getElementById("resi").value.trim();
+      if (!resi) return alert("Resi harus diisi");
+
+      const items = {};
+      skuList.forEach(sku => {
+        const cb = document.getElementById("cb-" + sku);
+        const qty = document.getElementById("qty-" + sku).value;
+        if (cb.checked && qty) {
+          items[sku] = parseInt(qty);
+        }
+      });
+
+      if (Object.keys(items).length === 0) return alert("Pilih dan isi minimal 1 SKU");
+
+      const data = {
+        tanggal: new Date().toISOString().slice(0, 10),
+        items
+      };
+
+      firebase.database().ref("returan/" + resi).set(data)
+        .then(() => {
+          alert("Data berhasil disimpan!");
+          location.reload();
+        })
+        .catch(err => alert("Gagal simpan: " + err.message));
+    }
+  </script>
+</body>
+</html>
+
