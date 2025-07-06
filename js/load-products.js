@@ -1,13 +1,33 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const productList = document.getElementById("product-list");
+  const productList = document.getElementById("product-list");
+
+  // 🔐 Firebase Anonymous Login
+  firebase.auth().signInAnonymously().catch((error) => {
+    console.error("❌ Gagal login anonymous:", error);
+  });
+
+  firebase.auth().onAuthStateChanged(function (user) {
+    if (!user) {
+      console.warn("⚠️ Belum login. Data tidak bisa diambil.");
+      return;
+    }
+
     const dbRef = firebase.database().ref("produk");
-  
-    dbRef.once("value", (snapshot) => {
-      productList.innerHTML = "";
+
+    // 🔄 Realtime listener
+    dbRef.on("value", (snapshot) => {
+      productList.innerHTML = ""; // Clear existing
+
+      if (!snapshot.exists()) {
+        productList.innerHTML = "<p>Belum ada produk tersedia.</p>";
+        return;
+      }
+
       snapshot.forEach((child) => {
         const data = child.val();
         const key = child.key;
-  
+
+        // Buat elemen kartu produk
         const card = document.createElement("div");
         card.className = "card";
         card.innerHTML = `
@@ -21,18 +41,19 @@ document.addEventListener("DOMContentLoaded", function () {
             <img src="images/icon-delete.png" title="Delete" class="btn-delete" data-id="${key}" />
           </div>
         `;
+
         productList.appendChild(card);
       });
-  
-      // 🔁 Event: Edit
+
+      // 🔁 Event Edit
       document.querySelectorAll(".btn-edit").forEach(btn => {
         btn.addEventListener("click", function () {
           const id = this.getAttribute("data-id");
           window.location.href = `stok_add_product.html?id=${id}`;
         });
       });
-  
-      // 🔁 Event: Delete
+
+      // 🗑️ Event Delete
       document.querySelectorAll(".btn-delete").forEach(btn => {
         btn.addEventListener("click", function () {
           const id = this.getAttribute("data-id");
@@ -41,7 +62,7 @@ document.addEventListener("DOMContentLoaded", function () {
             firebase.database().ref("produk/" + id).remove()
               .then(() => {
                 alert("Produk berhasil dihapus!");
-                location.reload();
+                // Jangan reload kalau pakai .on(), data otomatis update
               })
               .catch(err => {
                 alert("Gagal hapus produk: " + err.message);
@@ -51,4 +72,5 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     });
   });
-  
+});
+
