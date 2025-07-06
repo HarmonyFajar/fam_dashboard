@@ -1,27 +1,44 @@
+// ======== TOAST FUNCTION =========
+function showToast(message, type = "success") {
+  const toastBox = document.getElementById("toastBox");
+  const toast = document.createElement("div");
+  toast.textContent = message;
+  toast.style.padding = "12px 20px";
+  toast.style.marginTop = "10px";
+  toast.style.borderRadius = "6px";
+  toast.style.color = "#fff";
+  toast.style.fontSize = "14px";
+  toast.style.boxShadow = "0 2px 6px rgba(0,0,0,0.15)";
+  toast.style.background = type === "error" ? "#e53935" : "#43a047";
+  toast.style.transition = "opacity 0.3s ease";
+  toastBox.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.opacity = "0";
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
+// ======== MAIN SCRIPT =========
 document.addEventListener("DOMContentLoaded", function () {
   try {
-    // Firebase Anonymous Login
+    // 🔐 Anonymous Login
     firebase.auth().signInAnonymously()
-      .then(() => {
-        console.log("✅ Login anonymous berhasil");
-      })
-      .catch((error) => {
-        console.error("❌ Gagal login anonymous:", error);
-      });
+      .then(() => console.log("✅ Logged in anonymously"))
+      .catch(err => showToast("Login gagal: " + err.message, "error"));
 
     const form = document.getElementById("productForm");
     if (!form) {
-      console.error("Form dengan ID 'productForm' tidak ditemukan!");
+      showToast("Form tidak ditemukan!", "error");
       return;
     }
 
     const database = firebase.database();
     const storage = firebase.storage();
-
     const urlParams = new URLSearchParams(window.location.search);
     const editId = urlParams.get("id");
 
-    // Jika edit mode, ambil data produk lama
+    // 📥 Prefill untuk Edit Mode
     if (editId) {
       document.querySelector('h1').textContent = 'Edit Product';
       form.setAttribute("data-edit-id", editId);
@@ -41,11 +58,12 @@ document.addEventListener("DOMContentLoaded", function () {
             preview.style.display = "block";
           }
         } else {
-          alert('Produk dengan ID ini tidak ditemukan!');
+          showToast("Produk tidak ditemukan!", "error");
         }
       });
     }
 
+    // 📤 Submit Handler
     form.addEventListener("submit", async function (e) {
       e.preventDefault();
 
@@ -59,11 +77,12 @@ document.addEventListener("DOMContentLoaded", function () {
       const isEdit = form.getAttribute("data-edit-id");
 
       if (!name || !sku || !stock || !price || !category || !desc) {
-        alert("⚠️ Semua field wajib diisi!");
+        showToast("⚠️ Semua field wajib diisi!", "error");
         return;
       }
+
       if (!imageFile && !isEdit) {
-        alert("⚠️ Silakan upload foto produk terlebih dahulu.");
+        showToast("⚠️ Silakan upload foto produk terlebih dahulu.", "error");
         return;
       }
 
@@ -74,6 +93,7 @@ document.addEventListener("DOMContentLoaded", function () {
       try {
         let imageUrl = "";
 
+        // 📦 Upload image ke Storage
         if (imageFile) {
           const timestamp = Date.now();
           const imageName = `${timestamp}_${imageFile.name}`;
@@ -85,6 +105,7 @@ document.addEventListener("DOMContentLoaded", function () {
           imageUrl = snapshot.val().imageUrl || "";
         }
 
+        // 📝 Data Produk
         const productData = {
           name,
           sku,
@@ -96,13 +117,14 @@ document.addEventListener("DOMContentLoaded", function () {
           lastUpdated: firebase.database.ServerValue.TIMESTAMP
         };
 
+        // 🧾 Simpan ke Database
         if (isEdit) {
           await database.ref("produk/" + isEdit).update(productData);
-          alert("✅ Produk berhasil diperbarui!");
+          showToast("✅ Produk berhasil diperbarui!");
         } else {
-          const newProductRef = database.ref("produk").push();
-          await newProductRef.set(productData);
-          alert("✅ Produk baru berhasil ditambahkan!");
+          const newRef = database.ref("produk").push();
+          await newRef.set(productData);
+          showToast("✅ Produk berhasil ditambahkan!");
         }
 
         form.reset();
@@ -111,18 +133,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
       } catch (err) {
         console.error("❌ Error saat menyimpan data:", err);
-        alert("❌ Gagal menyimpan data. Cek console (F12) untuk detail error.");
+        showToast("❌ Gagal menyimpan data: " + err.message, "error");
         saveButton.disabled = false;
         saveButton.textContent = 'Save';
       }
     });
 
   } catch (err) {
-    console.error("❌ Terjadi error pada script:", err);
+    console.error("❌ Script Error:", err);
+    showToast("❌ Terjadi error dalam script.", "error");
   }
 });
 
-// Preview gambar
+// 🖼️ Preview Gambar
 document.getElementById("image").addEventListener("change", function (e) {
   const file = e.target.files[0];
   const preview = document.getElementById("previewImage");
@@ -135,5 +158,6 @@ document.getElementById("image").addEventListener("change", function (e) {
     reader.readAsDataURL(file);
   }
 });
+
 
     
