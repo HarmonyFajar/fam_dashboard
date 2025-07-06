@@ -1,144 +1,139 @@
-document.addEventListener('DOMContentLoaded', function() {
-  const databaseRef = firebase.database();
+document.addEventListener("DOMContentLoaded", function () {
+  try {
+    // Firebase Anonymous Login
+    firebase.auth().signInAnonymously()
+      .then(() => {
+        console.log("✅ Login anonymous berhasil");
+      })
+      .catch((error) => {
+        console.error("❌ Gagal login anonymous:", error);
+      });
 
-  // ========================
-  // 1️⃣ UPLOAD RESI
-  // ========================
-  const uploadFormResi = document.getElementById('uploadFormResi');
-
-  uploadFormResi.addEventListener('submit', function(e) {
-    e.preventDefault();
-
-    const file = document.getElementById('excelFile').files[0];
-    const tanggal = document.getElementById('tanggal').value;
-    const kloter = document.getElementById('kloter').value;
-
-    if (!file || !tanggal || !kloter) {
-      alert('Lengkapi semua field terlebih dahulu!');
+    const form = document.getElementById("productForm");
+    if (!form) {
+      console.error("Form dengan ID 'productForm' tidak ditemukan!");
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, { type: 'array' });
-      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+    const database = firebase.database();
+    const storage = firebase.storage();
 
-      const resiData = {};
+    const urlParams = new URLSearchParams(window.location.search);
+    const editId = urlParams.get("id");
 
-      jsonData.slice(1).forEach((row) => {
-        const [resi, sku, qty, ekspedisi] = row;
-        if (resi && sku && qty && ekspedisi) {
-          if (!resiData[resi]) {
-            resiData[resi] = {
-              items: [],
-              ekspedisi: ekspedisi,
-              scanned: false
-            };
+    // Jika edit mode, ambil data produk lama
+    if (editId) {
+      document.querySelector('h1').textContent = 'Edit Product';
+      form.setAttribute("data-edit-id", editId);
+
+      database.ref("produk/" + editId).once("value").then(snapshot => {
+        const data = snapshot.val();
+        if (data) {
+          document.getElementById("name").value = data.name || '';
+          document.getElementById("sku").value = data.sku || '';
+          document.getElementById("stock").value = data.stock || 0;
+          document.getElementById("price").value = data.price || 0;
+          document.getElementById("category").value = data.category || '';
+          document.getElementById("desc").value = data.desc || '';
+          if (data.imageUrl) {
+            const preview = document.getElementById("previewImage");
+            preview.src = data.imageUrl;
+            preview.style.display = "block";
           }
-          resiData[resi].items.push({ sku, qty });
+        } else {
+          alert('Produk dengan ID ini tidak ditemukan!');
         }
       });
-
-      Object.keys(resiData).forEach(resi => {
-        databaseRef.ref(`resis/${tanggal}/${kloter}/${resi}`).set(resiData[resi]);
-      });
-
-      document.getElementById('resultResi').innerText = 'Upload Resi berhasil!';
-      uploadFormResi.reset();
-    };
-    reader.readAsArrayBuffer(file);
-  });
-
-  // ========================
-  // 2️⃣ UPLOAD GMV
-  // ========================
-  const uploadFormGMV = document.getElementById('uploadFormGMV');
-
-  uploadFormGMV.addEventListener('submit', function(e) {
-    e.preventDefault();
-
-    const modalFile = document.getElementById('modalFile').files[0];
-    const gmvFile = document.getElementById('gmvFile').files[0];
-    const tanggal = document.getElementById('tanggalGMV').value;
-    const platform = document.getElementById('platform').value;
-    const iklanManual = parseFloat(document.getElementById('iklanManual').value || 0);
-    const topup = Math.round(iklanManual * 1.11);
-    document.getElementById('topupHasil').innerText = `Rp ${topup.toLocaleString()}`;
-
-    if (!modalFile || !gmvFile || !tanggal || !platform) {
-      alert('Lengkapi semua data GMV!');
-      return;
     }
 
-    Promise.all([
-      readExcelFile(modalFile),
-      readExcelFile(gmvFile)
-    ]).then(([modalData, gmvData]) => {
-      const skuModalMap = {};
-      modalData.slice(1).forEach(row => {
-        const [sku, modal] = row;
-        if (sku && modal) {
-          skuModalMap[sku] = parseFloat(modal);
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const name = document.getElementById("name").value.trim();
+      const sku = document.getElementById("sku").value.trim();
+      const stock = document.getElementById("stock").value.trim();
+      const price = document.getElementById("price").value.trim();
+      const category = document.getElementById("category").value;
+      const desc = document.getElementById("desc").value.trim();
+      const imageFile = document.getElementById("image").files[0];
+      const isEdit = form.getAttribute("data-edit-id");
+
+      if (!name || !sku || !stock || !price || !category || !desc) {
+        alert("⚠️ Semua field wajib diisi!");
+        return;
+      }
+      if (!imageFile && !isEdit) {
+        alert("⚠️ Silakan upload foto produk terlebih dahulu.");
+        return;
+      }
+
+      const saveButton = form.querySelector('button[type="submit"]');
+      saveButton.disabled = true;
+      saveButton.textContent = 'Menyimpan...';
+
+      try {
+        let imageUrl = "";
+
+        if (imageFile) {
+          const timestamp = Date.now();
+          const imageName = `${timestamp}_${imageFile.name}`;
+          const storageRef = storage.ref("produk_images/" + imageName);
+          const snapshot = await storageRef.put(imageFile);
+          imageUrl = await snapshot.ref.getDownloadURL();
+        } else if (isEdit) {
+          const snapshot = await database.ref("produk/" + isEdit).once("value");
+          imageUrl = snapshot.val().imageUrl || "";
         }
-      });
 
-      let totalJual = 0;
-      let totalModal = 0;
-      let totalFee = 0;
-      let totalQty = 0;
-      let totalOrder = new Set();
+        const productData = {
+          name,
+          sku,
+          stock: parseInt(stock),
+          price: parseInt(price),
+          category,
+          desc,
+          imageUrl,
+          lastUpdated: firebase.database.ServerValue.TIMESTAMP
+        };
 
-      gmvData.slice(1).forEach(row => {
-        const [resi, sku, qty, hargaJual] = row;
-        const modal = skuModalMap[sku] || 0;
-        const quantity = parseInt(qty);
-        const jual = parseFloat(hargaJual);
-
-        if (resi && sku && qty && hargaJual) {
-          totalOrder.add(resi);
-          totalQty += quantity;
-          totalJual += jual * quantity;
-          totalModal += modal * quantity;
-          totalFee += (jual * 0.12) * quantity;
+        if (isEdit) {
+          await database.ref("produk/" + isEdit).update(productData);
+          alert("✅ Produk berhasil diperbarui!");
+        } else {
+          const newProductRef = database.ref("produk").push();
+          await newProductRef.set(productData);
+          alert("✅ Produk baru berhasil ditambahkan!");
         }
-      });
 
-      const profit = totalJual - totalModal - totalFee;
+        form.reset();
+        document.getElementById("previewImage").style.display = "none";
+        window.location.href = "load_products.html";
 
-      const gmvSummary = {
-        platform: platform,
-        total_order: totalOrder.size,
-        total_qty: totalQty,
-        total_jual: totalJual,
-        total_modal: totalModal,
-        total_fee: totalFee,
-        profit_bersih: profit,
-        iklan_manual: iklanManual,
-        topup: topup
-      };
-
-      databaseRef.ref(`gmv/${tanggal}`).set(gmvSummary);
-
-      document.getElementById('resultGMV').innerText = 'Upload GMV berhasil!';
-      uploadFormGMV.reset();
-      document.getElementById('topupHasil').innerText = `Rp 0`;
+      } catch (err) {
+        console.error("❌ Error saat menyimpan data:", err);
+        alert("❌ Gagal menyimpan data. Cek console (F12) untuk detail error.");
+        saveButton.disabled = false;
+        saveButton.textContent = 'Save';
+      }
     });
-  });
 
-  function readExcelFile(file) {
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-        const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-        resolve(json);
-      };
-      reader.readAsArrayBuffer(file);
-    });
+  } catch (err) {
+    console.error("❌ Terjadi error pada script:", err);
   }
 });
+
+// Preview gambar
+document.getElementById("image").addEventListener("change", function (e) {
+  const file = e.target.files[0];
+  const preview = document.getElementById("previewImage");
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function (event) {
+      preview.src = event.target.result;
+      preview.style.display = "block";
+    };
+    reader.readAsDataURL(file);
+  }
+});
+
     
