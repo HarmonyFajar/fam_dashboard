@@ -1,5 +1,3 @@
-// js/upload_produk.js (VERSI LENGKAP & SUDAH DIPERBAIKI)
-
 // Menunggu seluruh halaman HTML siap sebelum menjalankan script
 document.addEventListener("DOMContentLoaded", function () {
     try {
